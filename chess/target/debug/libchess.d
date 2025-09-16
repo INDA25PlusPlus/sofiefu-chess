@@ -1,1 +1,1 @@
-/home/sofiefu/kth/sofiefu-chess/chess/target/debug/libchess.rlib: /home/sofiefu/kth/sofiefu-chess/chess/src/lib.rs
+/home/sofiefu/kth/sofiefu-chess/chess/target/debug/libchess.rlib: /home/sofiefu/kth/sofiefu-chess/chess/src/lib.rs /home/sofiefu/kth/sofiefu-chess/chess/src/play.rs /home/sofiefu/kth/sofiefu-chess/chess/src/reset.rs /home/sofiefu/kth/sofiefu-chess/chess/src/visualize.rs
