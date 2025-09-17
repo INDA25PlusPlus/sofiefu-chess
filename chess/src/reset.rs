@@ -1,63 +1,77 @@
-// make board global
-use once_cell::sync::Lazy;
-use std::sync::Mutex; //guard that only one thread can access it at a time
+pub struct game_state {
+    pub board: Vec<Vec<String>>,
+    pub player: Vec<Vec<char>>,
+    pub turn: char,
+}
 
-pub static BOARD: Lazy<Mutex<Vec<Vec<String>>>> = Lazy::new(|| {
-    Mutex::new(vec![vec!["empty".to_string(); 9]; 9]) 
-});
-pub static COLOR: Lazy<Mutex<Vec<Vec<char>>>> = Lazy::new(|| { 
-    Mutex::new(vec![vec![' '; 9]; 9]) 
-});
-pub static TURN: Lazy<Mutex<char>> = Lazy::new(|| Mutex::new('w'));
+impl game_state {
+    pub fn new() -> Self { // creates a new instance of my struct
+        let mut board = vec![vec!["empty".to_string(); 9]; 9];
+        let mut player = vec![vec![' '; 9]; 9];
 
+        let alphabet = vec!['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+        // Pawns
+        for letter in alphabet {
+            let x = letter as usize - 96;
 
-pub fn reset_board() {
-    //lock for mutex guard to r/w safely. 
-    // unwrap handles possibly posioned lock
-    let mut board = BOARD.lock().unwrap(); 
-    let mut color = COLOR.lock().unwrap();
-    let mut turn = TURN.lock().unwrap();
+            board[2][x] = "pawn".to_string();
+            player[2][x] = 'w';   
 
-    // reset board
-    turn = 'w';
-    for i in 1..9 { 
-        for u in 1..9{
-            board[i][u] = "empty".to_string();
-            color[i][u] = ' '; 
+            board[7][x] = "pawn".to_string();
+            player[7][x] = 'b';
+        }
+
+        // Other pieces
+        let rows = vec![8, 1];
+        for &row in &rows {
+            let c = if row==8 { 'b' } else { 'w' }; 
+
+            board[row][1] = "rook".to_string(); player[row][1] = c;
+            board[row][8] = "rook".to_string(); player[row][8] = c;
+
+            board[row][2] = "knight".to_string(); player[row][2] = c;
+            board[row][7] = "knight".to_string(); player[row][7] = c;
+
+            board[row][3] = "bishop".to_string(); player[row][3] = c;
+            board[row][6] = "bishop".to_string(); player[row][6] = c;
+
+            board[row][4] = "queen".to_string(); player[row][4] = c;
+            board[row][5] = "king".to_string(); player[row][5] = c;
+        }
+
+        // Example print
+        // println!("{}", board[2][2].as_ref().unwrap());
+
+        Self { // returns the an instance of my struct
+            board, 
+            player, 
+            turn: 'w'
         }
     }
 
-    let alphabet = vec!['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-
-    // Pawns
-    for letter in alphabet {
-        let x = letter as usize - 96;
-
-        board[2][x] = "pawn".to_string();
-        color[2][x] = 'w';   
-
-        board[7][x] = "pawn".to_string();
-        color[7][x] = 'b';
+    pub fn switch_turn(&mut self){
+        self.turn = if self.turn=='w' {'b'} else {'w'};
     }
 
-    // Other pieces
-    let rows = vec![8, 1];
-    for &row in &rows {
-        let c = if row==8 { 'b' } else { 'w' }; 
-
-        board[row][1] = "rook".to_string(); color[row][0] = c;
-        board[row][8] = "rook".to_string(); color[row][7] = c;
-
-        board[row][2] = "knight".to_string(); color[row][1] = c;
-        board[row][7] = "knight".to_string(); color[row][6] = c;
-
-        board[row][3] = "bishop".to_string(); color[row][2] = c;
-        board[row][6] = "bishop".to_string(); color[row][5] = c;
-
-        board[row][4] = "queen".to_string(); color[row][3] = c;
-        board[row][5] = "king".to_string(); color[row][4] = c;
+    pub fn reset(&mut self, r: i32, c: i32){
+        let ur = r as usize; let uc = c as usize;
+        self.board[ur][uc] = "empty".to_string();
+        self.player[ur][uc] = ' ';
     }
 
-    // Example print
-    // println!("{}", board[2][2].as_ref().unwrap());
+    pub fn set(&mut self, r: i32, c: i32, new_piece: String, new_player: char){
+        let ur = r as usize; let uc = c as usize;
+        self.board[ur][uc] = new_piece;
+        self.player[ur][uc] = new_player;
+    }
+
+    pub fn get_piece(&mut self, r: i32, c: i32) -> String {
+        let ur = r as usize; let uc = c as usize;
+        return self.board[ur][uc].clone();
+    }
+
+    pub fn get_player(&mut self, r: i32, c: i32) -> char {
+        let ur = r as usize; let uc = c as usize;
+        return self.player[ur][uc];
+    }
 }

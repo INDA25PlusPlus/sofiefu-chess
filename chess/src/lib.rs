@@ -21,15 +21,4 @@ mod tests {
 }
 
 
-/*
-IDEA
-struct for each type of piece - instances of structs
-each position on the board stores which piece (or none) it contains
-1: pawn
-2: horse
-3: löpare
-4: tower
-5: queen
-6: king
-*/
 

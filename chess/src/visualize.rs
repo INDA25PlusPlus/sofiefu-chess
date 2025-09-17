@@ -7,13 +7,11 @@
 //     for i in 1..20{
 //         println!("-");
 //     }
-use crate::reset::{BOARD, COLOR}; 
+use crate::reset::game_state; 
 
-pub fn show_square(r: i32, c: i32){ // takes two integers [1,8] as input
-    let board = BOARD.lock().unwrap();
-    let color = COLOR.lock().unwrap();
+pub fn show_square(r: i32, c: i32, game: &mut game_state){ // takes two integers [1,8] as input
 
     let ur = r as usize; let uc = c as usize;
-    print!("{} ", color[ur][uc]);
-    println!("{}", &board[ur][uc]);
+    print!("{} ", game.get_player(r, c));
+    println!("{}", game.get_piece(r, c));
 }

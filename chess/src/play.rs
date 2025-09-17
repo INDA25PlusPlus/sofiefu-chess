@@ -1,43 +1,43 @@
 //crate is a path prefix, "start from top level of this library and navigate to this module"
-use crate::reset::{BOARD, COLOR}; 
+use crate::reset::game_state; 
 
 fn in_range(r: i32, c: i32) -> bool {
     if r<1 || r>8 || c<1 || c>8 {return false;}
     return true;
 }
 
-fn valid_moves(r: i32, c: i32, my_color: char, board: &mut Vec<Vec<String>>) -> Vec<(i32, i32)>{
-    let ur = r as usize; let uc = c as usize;
+fn valid_moves(r: i32, c: i32, game: &mut game_state) -> Vec<(i32, i32)>{
     let mut valid_pos: Vec<(i32, i32)> = Vec::new();
     let mut add: Vec<(i32, i32)> = Vec::new();
     let mut range = 0;
-    let piece_type = board[ur][uc].clone();
+
+    let piece = game.get_piece(r, c); let player = game.get_player(r, c);
 
     // note what color
-    if piece_type == "pawn".to_string() {
-        let sign = if my_color=='w' {1} else {-1};
+    if piece == "pawn".to_string() {
+        let sign = if player=='w' {1} else {-1};
         add.push((sign, 0));
-        if ((r==2 && my_color=='w') || (r==7 && my_color=='b')) { add.push((2*sign, 0)); }
+        if ((r==2 && player=='w') || (r==7 && player=='b')) { add.push((2*sign, 0)); }
         range = 1;
         // en passant
     }
-    else if piece_type == "rook".to_string() {
+    else if piece == "rook".to_string() {
         add = vec![(1, 0), (-1, 0), (0, -1), (0, 1)];
         range = 8;
     }
-    else if piece_type == "bishop".to_string() {
+    else if piece == "bishop".to_string() {
         add = vec![(1, 1), (1, -1), (-1, -1), (-1, 1)]; 
         range = 8;
     }
-    else if piece_type == "knight".to_string() {
+    else if piece == "knight".to_string() {
         add = vec![(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)];
         range = 1;
     }
-    else if piece_type == "queen".to_string() {
+    else if piece == "queen".to_string() {
         add = vec![(1, 0), (-1, 0), (0, -1), (0, 1), (1, 1), (1, -1), (-1, -1), (-1, 1)];
         range = 8;
     }
-    else if piece_type == "king".to_string() { 
+    else if piece == "king".to_string() { 
         add = vec![(1, 0), (-1, 0), (0, -1), (0, 1), (1, 1), (1, -1), (-1, -1), (-1, 1)];
         range = 1;
     }
@@ -48,9 +48,11 @@ fn valid_moves(r: i32, c: i32, my_color: char, board: &mut Vec<Vec<String>>) -> 
             let new_r = r+step*addr; let new_c = c+step*addc;
             if !in_range(new_r, new_c) {break;}
 
+            if game.get_piece(new_r, new_c) != "empty".to_string() {
+                if player != game.get_player(new_r, new_c) { valid_pos.push((new_r, new_c)); }
+                break;
+            }
             valid_pos.push((new_r, new_c));
-            let unew_r = new_r as usize; let unew_c = new_c as usize;
-            if board[unew_r][unew_c] != "empty".to_string() {break;}
         }
     }
 
@@ -59,35 +61,46 @@ fn valid_moves(r: i32, c: i32, my_color: char, board: &mut Vec<Vec<String>>) -> 
 
 // fn checkmate 
 
-fn dangerous_pos(r: i32, c: i32, color: &mut Vec<Vec<char>>, board: &mut Vec<Vec<String>>) -> bool{
+fn dangerous_pos(r: i32, c: i32, game: &mut game_state) -> bool{
     for i in 1..9 {
-        for u 1..9 {
+        for u in 1..9 {
             let ui = i as i32; let uu = u as i32;
-            if board[i][u] != "empty".to_string() {
-                let mut valid_pos = valid_moves(ui, uu, color[i][u], board);
-                if !valid_pos.contains(&(r, c)) { return true; }
+            if game.board[i][u] != "empty".to_string() && game.get_player(r, c) != game.player[i][u] {
+                let mut valid_pos = valid_moves(ui, uu, game);
+                if valid_pos.contains(&(r, c)) { return true; }
             }
         }
     }
+    
     return false;
 }
 
-fn is_checked(player: char, color: &mut Vec<Vec<char>>, board: &mut Vec<Vec<String>>) -> bool{
-    let mut r: i32 = 1; 
-    let mut c: i32 = 1;
+fn is_checked(game: &mut game_state) -> bool{
+    // find position of my king
+    let mut r: i32 = 1; let mut c: i32 = 1;
     for i in 1..9 {
-        for u 1..9 {
-            if board[i][u] != "king".to_string() && color[i][u] == player {
+        for u in 1..9 {
+            if game.board[i][u] == "king".to_string() && game.player[i][u] == game.turn {
                 r = i as i32; c = u as i32;
             }
         }
     }
+    return dangerous_pos(r, c, game);
+}
+
+
+fn is_checkmate(game: &mut game_state) -> bool{
+    let mut r: i32 = 1; let mut c: i32 = 1;
     for i in 1..9 {
-        for u 1..9 {
-            let ui = i as i32; let uu = u as i32;
-            if board[i][u] != "empty".to_string() && color[i][u] != player {
-                let mut valid_pos = valid_moves(ui, uu, color[i][u], board);
-                if !valid_pos.contains(&(r, c)) { return true; }
+        for u in 1..9 {
+            if game.board[i][u] != "empty".to_string() {    
+                let ui = i as i32; let uu = u as i32;
+                let mut valid_pos = valid_moves(ui, uu, game);
+                for &(a, b) in &valid_pos {
+                    if game.get_piece(a, b) == "king".to_string() && game.get_player(a, b)!=game.turn {
+                        return true;
+                    }
+                }
             }
         }
     }
@@ -95,25 +108,22 @@ fn is_checked(player: char, color: &mut Vec<Vec<char>>, board: &mut Vec<Vec<Stri
 }
 
 // 0=invalid move, 1=valid move, 2=valid move piece eaten
-pub fn make_move(start_r: i32, start_c: i32, end_r: i32, end_c: i32) -> String { 
-    let mut board = BOARD.lock().unwrap();
-    let mut color = COLOR.lock().unwrap();
-    let mut turn = TURN.lock().unwrap();
-
+pub fn make_move(start_r: i32, start_c: i32, end_r: i32, end_c: i32, game: &mut game_state) -> String { 
     // check if start and ending position is valid + piece exists
     if !in_range(start_r, start_c) || !in_range(end_r, end_c) {return "invalid move".to_string();}
 
-    // check if piece exists
-    let ustart_r = start_r as usize; let ustart_c = start_c as usize;
-    let piece_type = board[ustart_r][ustart_c].clone().as_str();
-    let my_color = color[ustart_r][ustart_c];
-    if piece_type == "empty" { return "invalid move".to_string(); }
-    else if turn != my_color { return "not your turn".to_string(); }
-    
+    // for cleaner code
+    let start_piece = game.get_piece(start_r, start_c); let end_piece = game.get_piece(end_r, end_c);
+    let start_player = game.get_player(start_r, start_c); let end_player = game.get_player(end_r, end_c);
+
+    // some more checks
+    if start_piece == "empty".to_string() { return "invalid: no piece".to_string(); }
+    else if start_player != game.turn { return "invalid: not your turn".to_string(); }
+    else if start_player == end_player { return "invalid: eating up own piece".to_string(); }
 
     // generate valid positions + check if end is there
     let mut valid_pos = Vec::new();
-    valid_pos = valid_moves(start_r, start_c, color[ustart_r][ustart_c], &mut board); 
+    valid_pos = valid_moves(start_r, start_c, game); 
     if !valid_pos.contains(&(end_r, end_c)) { return "invalid move".to_string(); }
     
     // check that the current player is not being checkmated
@@ -121,33 +131,31 @@ pub fn make_move(start_r: i32, start_c: i32, end_r: i32, end_c: i32) -> String {
     // not checked
 
     // dont move into checked position 
-    if piece_type == "king" {
-        if dangerous_pos(end_r, end_c, &mut color, &mut board) {return "moving into checkmate".to_string(); }
+    if start_piece == "king".to_string() {
+        if dangerous_pos(end_r, end_c, game) {return "invalid: moving into checkmate".to_string(); }
     }
 
-    
     // check promotion
-    // let uend_r = end_r as usize; let uend_c = end_c as usize;
-    // if board[ustart_r][ustart_c] == ""
-    
     
     // check if current player is checked
-    let prev_piece = board[uend_r][uend_c].clone(); // eaten piece
-    let prev_color = color[uendr][uend_c];
-    board[uend_r][uend_c] = board[ustart_r][ustart_c].clone(); board[ustart_r][ustart_c] = "empty".to_string();
-    color[uend_r][uend_c] = color[ustart_r][ustart_c]; color[ustart_r][ustart_c] = ' ';
+    game.set(end_r, end_c, start_piece.clone(), start_player); 
+    game.reset(start_r, start_c);
+
     
-    if is_checked(turn, &mut color, &mut board) { 
-        board[ustart_r][ustart_c] = board[uend_r][uend_c].clone();
-        board[uend_r][uend_c] = prev_piece; 
-        color[ustart_r][ustart_c] = color[uend_r][uend_c];
-        color[uend_r][uend_c] = prev_color; 
-        return "invalid move, resolve check".to_string(); 
+    if is_checked(game) { 
+        game.set(start_r, start_c, start_piece.clone(), start_player);
+        game.set(end_r, end_c, end_piece.clone(), end_player);
+        return "invalid move: you are being checked".to_string(); 
+    }
+
+    // check if checkmating opponent
+    if is_checkmate(game) {
+        return "checkmate".to_string();
     }
     
     // succesful move + switch turn
-    turn = if turn {false;} else {true;};
-    if prev_piece == "empty".to_string() { 
+    game.switch_turn();
+    if end_piece == "empty".to_string() { 
         return "successful move: no piece eaten".to_string(); 
     }
     else{
