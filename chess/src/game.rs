@@ -1,7 +1,14 @@
+pub mod movement; // mod declares move as a submodule of game
+pub mod special_moves;
+pub mod generate_valid_moves;
+pub mod check;
+#[derive(Clone)]
+
 pub struct game_state {
     pub board: Vec<Vec<String>>,
     pub player: Vec<Vec<char>>,
     pub turn: char,
+    pub castle: Vec<bool>,
 }
 
 impl game_state {
@@ -45,7 +52,8 @@ impl game_state {
         Self { // returns the an instance of my struct
             board, 
             player, 
-            turn: 'w'
+            turn: 'w',
+            castle: vec![true, true]
         }
     }
 
@@ -65,6 +73,14 @@ impl game_state {
         self.player[ur][uc] = new_player;
     }
 
+    pub fn move_piece(&mut self, sr: i32, sc: i32, er: i32, ec: i32) { // move (sr, sc)->(er, ec)
+        let usr = sr as usize; let usc = sc as usize;
+        let uer = er as usize; let uec = ec as usize;
+        self.board[uer][uec] = self.board[usr][usc].clone(); self.player[uer][uec] = self.player[usr][usc];
+        self.board[usr][usc] = "empty".to_string(); self.player[usr][usc] = ' ';
+
+    }
+
     pub fn get_piece(&mut self, r: i32, c: i32) -> String {
         let ur = r as usize; let uc = c as usize;
         return self.board[ur][uc].clone();
@@ -73,5 +89,10 @@ impl game_state {
     pub fn get_player(&mut self, r: i32, c: i32) -> char {
         let ur = r as usize; let uc = c as usize;
         return self.player[ur][uc];
+    }
+
+    pub fn empty(&mut self, r: i32, c: i32) -> bool {
+        let ur = r as usize; let uc = c as usize;
+        return self.board[ur][uc] == "empty".to_string();
     }
 }

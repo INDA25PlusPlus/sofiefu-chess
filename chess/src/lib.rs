@@ -1,8 +1,7 @@
 
-pub mod reset;
-pub mod play;
+pub mod game;
 pub mod visualize; // if these lines not included, these modules not usable because this file decides the library
-
+pub mod outcome;
 
 // TESTING 
 pub fn add(left: u64, right: u64) -> u64 {

@@ -7,7 +7,7 @@
 //     for i in 1..20{
 //         println!("-");
 //     }
-use crate::reset::game_state; 
+use crate::game::game_state; 
 
 pub fn show_square(r: i32, c: i32, game: &mut game_state){ // takes two integers [1,8] as input
 
