@@ -6,7 +6,7 @@ impl game_state {
         return true;
     }
     
-    pub fn pawn_valid_moves(&mut self, r: i32, c: i32) -> Vec<(i32, i32)> {
+    pub fn pawn_valid_moves(&mut self, r: i32, c: i32) -> Vec<(i32, i32)> { // returns valid coordinates for this pawn
         let player = self.get_player(r, c);
         let mut valid_pos: Vec<(i32, i32)> = Vec::new();
         let sign = if player=='w' {1} else {-1};
@@ -21,7 +21,8 @@ impl game_state {
         // en passant  
     }
     
-    pub fn valid_moves(&mut self, r: i32, c: i32) -> Vec<(i32, i32)>{
+    /// returns valid coordinates for (r, c) to move to
+    pub fn valid_moves(&mut self, r: i32, c: i32) -> Vec<(i32, i32)>{ 
         let mut valid_pos: Vec<(i32, i32)> = Vec::new();
         let mut add: Vec<(i32, i32)> = Vec::new();
         let mut range = 0;
