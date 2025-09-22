@@ -81,17 +81,17 @@ impl game_state {
 
     }
 
-    pub fn get_piece(&mut self, r: i32, c: i32) -> String {
+    pub fn get_piece(&self, r: i32, c: i32) -> String {
         let ur = r as usize; let uc = c as usize;
         return self.board[ur][uc].clone();
     }
 
-    pub fn get_player(&mut self, r: i32, c: i32) -> char {
+    pub fn get_player(&self, r: i32, c: i32) -> char {
         let ur = r as usize; let uc = c as usize;
         return self.player[ur][uc];
     }
 
-    pub fn empty(&mut self, r: i32, c: i32) -> bool {
+    pub fn empty(&self, r: i32, c: i32) -> bool {
         let ur = r as usize; let uc = c as usize;
         return self.board[ur][uc] == "empty".to_string();
     }
