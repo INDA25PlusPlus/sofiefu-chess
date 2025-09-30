@@ -4,11 +4,11 @@ impl game_state {
     pub fn is_checking(&mut self, player: char) -> bool{ // is player=player checking opponent
         for i in 1..9 {
             for u in 1..9 {
-                if self.board[i][u] != "empty".to_string() && self.player[i][u]!=player {    
+                if self.board[i][u] != "empty".to_string() && self.player[i][u]==player {    
                     let ui = i as i32; let uu = u as i32;
                     let valid_pos = self.valid_moves(ui, uu);
                     for &(a, b) in &valid_pos {
-                        if self.get_piece(a, b) == "king".to_string() && self.get_player(a, b)==player {
+                        if self.get_piece(a, b) == "king".to_string() && self.get_player(a, b)!=player {
                             return true;
                         }
                     }

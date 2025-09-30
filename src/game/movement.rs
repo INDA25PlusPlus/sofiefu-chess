@@ -22,7 +22,7 @@ impl game_state {
         let opponent = if start_player=='w' {'b'} else {'w'};
         let mut upd_game = self.clone();   
         upd_game.move_piece(start_r, start_c, end_r, end_c);
-        if upd_game.is_checking(start_player) { return Outcome::Checked; }
+        if upd_game.is_checking(opponent) { return Outcome::Checked; }
         
         // SUCCESSFUL MOVE
         self.move_piece(start_r, start_c, end_r, end_c);
