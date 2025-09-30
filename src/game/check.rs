@@ -24,7 +24,7 @@ impl game_state {
 
         for i in 1..9 {
             for u in 1..9 {
-                if self.player[i][u]!=self.turn {
+                if self.player[i][u]==self.turn {
                     let r = i as i32; let c = u as i32; 
 
                     let valid_pos = self.valid_moves(r, c);
